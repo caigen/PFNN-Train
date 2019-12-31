@@ -3,6 +3,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 theano.config.allow_gc = True
+theano.config.floatX = 'float16'
 
 sys.path.append('./nn')
 
@@ -22,12 +23,21 @@ X = database['Xun'].astype(theano.config.floatX)
 Y = database['Yun'].astype(theano.config.floatX)
 P = database['Pun'].astype(theano.config.floatX)
 
+print("load done: ")
 print(X.shape, Y.shape)
+print(X.dtype, Y.dtype)
+print(sys.getsizeof(X), sys.getsizeof(Y))
+
 
 """ Calculate Mean and Std """
 
 Xmean, Xstd = X.mean(axis=0), X.std(axis=0)
 Ymean, Ystd = Y.mean(axis=0), Y.std(axis=0)
+
+print("mean and std done: ")
+print(Xmean.shape, Ymean.shape)
+print(Xmean.dtype, Ymean.dtype)
+print(sys.getsizeof(Xmean), sys.getsizeof(Ymean))
 
 j = 31
 w = ((60*2)//10)
@@ -71,11 +81,17 @@ Xmean.astype(np.float32).tofile('./demo/network/pfnn/Xmean.bin')
 Ymean.astype(np.float32).tofile('./demo/network/pfnn/Ymean.bin')
 Xstd.astype(np.float32).tofile('./demo/network/pfnn/Xstd.bin')
 Ystd.astype(np.float32).tofile('./demo/network/pfnn/Ystd.bin')
+print("mean and std saved.")
+
 
 """ Normalize Data """
 
 X = (X - Xmean) / Xstd
 Y = (Y - Ymean) / Ystd
+X.astype(np.float32).tofile('./demo/network/pfnn/X.bin')
+X.astype(np.float32).tofile('./demo/network/pfnn/Y.bin')
+print("normalized X and Y saved.")
+
 
 """ Phase Function Neural Network """
 
@@ -218,7 +234,8 @@ trainer = AdamTrainer(rng=rng, batchsize=batchsize, epochs=1, alpha=0.0001)
 
 I = np.arange(len(X))
 
-for me in range(20):
+epoch = 1
+for me in range(epoch):
     rng.shuffle(I)
     
     print('\n[MacroEpoch] %03i' % me)
